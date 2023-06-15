@@ -2,6 +2,8 @@
 @using SerialPort.Desktop.Modules
 @using System.Globalization
 
+@inject IPopupService PopupService
+
 <div>
     <div style="height: calc(100vh - 200px)">
         <div style="height: 100%;float: left;width: 80%;">
@@ -9,44 +11,44 @@
         </div>
         <div style="width: 20%;height: 100%;padding: 8px;float: right;">
             <MSelect Items="_serialPortDtos"
-                     @bind-Value="_serialPortId"
+            @bind-Value="_serialPortId"
                      ItemText="u => u.Name"
                      ItemValue="u => u.Id"
                      Label="串口选择"
-                     Dense
-                     Outlined>
+                              Dense
+                              Outlined>
             </MSelect>
             <MSelect Items="_baudRateDtos"
                      @bind-Value="_baudRateId"
                      ItemText="u => u.Value.ToString()"
                      ItemValue="u => u.Value"
                      Label="波特率"
-                     Dense
-                     Outlined>
+                              Dense
+                              Outlined>
             </MSelect>
             <MSelect Items="_stopBitDtos"
                      @bind-Value="_stopBitId"
                      ItemText="u => u.Value.ToString(CultureInfo.InvariantCulture)"
                      ItemValue="u => u.Value"
                      Label="停止位"
-                     Dense
-                     Outlined>
+                              Dense
+                              Outlined>
             </MSelect>
             <MSelect Items="_dataBitDtos"
                      @bind-Value="_dataBitId"
                      ItemText="u => u.Value.ToString(CultureInfo.InvariantCulture)"
                      ItemValue="u => u.Value"
                      Label="数据位"
-                     Dense
-                     Outlined>
+                              Dense
+                              Outlined>
             </MSelect>
             <MSelect Items="_checkBitDtos"
                      @bind-Value="_checkBitId"
                      ItemText="u => u.Value.ToString()"
                      ItemValue="u => u.Value"
                      Label="校验位"
-                     Dense
-                     Outlined>
+                              Dense
+                              Outlined>
             </MSelect>
             <MButton @onclick="OpenSerialPort" Block Outlined>@OpenSerialPortText</MButton>
         </div>
@@ -62,7 +64,7 @@
         </MTabs>
         <MTabsItems @bind-Value="_tab">
             <MTabItem Value="1">
-                <SendMessage/>
+                <SendMessage />
             </MTabItem>
             <MTabItem Value="2">
                 <MCard Flat>
@@ -72,3 +74,7 @@
         </MTabsItems>
     </div>
 </div>
+<MFooter>
+    <MButton Icon Small><MIcon>mdi-cog-outline</MIcon></MButton>
+    <span style="color:red;margin-left:8px;">open666.cn</span>
+</MFooter>

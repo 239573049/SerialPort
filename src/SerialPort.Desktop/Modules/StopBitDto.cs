@@ -2,9 +2,9 @@
 
 public class StopBitDto
 {
-    public double Value { get; set; }
+    public System.IO.Ports.StopBits Value { get; set; }
 
-    public StopBitDto(double value)
+    public StopBitDto(System.IO.Ports.StopBits value)
     {
         Value = value;
     }

@@ -11,7 +11,7 @@ public partial class MainFrom : Form
         InitializeComponent();
 
         MinimumSize = new Size(850, 700);
-        
+
         var services = new ServiceCollection();
         services.AddWindowsFormsBlazorWebView();
         services.AddMasaBlazor(options =>

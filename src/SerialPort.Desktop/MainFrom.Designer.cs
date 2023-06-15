@@ -48,7 +48,8 @@ partial class MainFrom
         ClientSize = new Size(800, 450);
         Controls.Add(blazorWebView1);
         Name = "MainFrom";
-        Text = "Form1";
+        ShowIcon = false;
+        Text = "串口工具";
         ResumeLayout(false);
     }
 

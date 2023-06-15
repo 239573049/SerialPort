@@ -1,14 +1,12 @@
 using BlazorComponent;
 using SerialPort.Desktop.Modules;
+using System.IO.Ports;
 
 namespace SerialPort.Desktop.Pages;
 
-public partial class Home
+public partial class Home : IAsyncDisposable
 {
-    private List<SerialPortDto> _serialPortDtos = new()
-    {
-        new SerialPortDto("调试内容"),
-    };
+    private List<SerialPortDto> _serialPortDtos = new();
 
     private List<BaudRateDto> _baudRateDtos = new()
     {
@@ -33,9 +31,10 @@ public partial class Home
 
     private List<StopBitDto> _stopBitDtos = new()
     {
-        new (1),
-        new (1.5),
-        new (2),
+        new (StopBits.None),
+        new (StopBits.One),
+        new (StopBits.Two),
+        new (StopBits.OnePointFive),
     };
 
     private List<DataBitDto> _dataBitDtos = new List<DataBitDto>()
@@ -57,14 +56,18 @@ public partial class Home
 
     private int _baudRateId = 9600;
     
-    private double _stopBitId = 1;
+    private StopBits _stopBitId = StopBits.None;
     
     private int _dataBitId = 8;
     
     private CheckBitType _checkBitId = CheckBitType.None;
 
     private StringNumber _tab;
-    
+
+    private bool disposable;
+
+    private SerialPort 
+
     private string OpenSerialPortText = "打开串口";
     private async Task<object> InitEditor()
     {
@@ -82,10 +85,64 @@ public partial class Home
 
     private async Task OpenSerialPort()
     {
+        var serialPort = _serialPortDtos.First(x => x.Id == _serialPortId);
+
+        if (serialPort == null)
+        {
+            await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
+            {
+                Title = "请先选择串口"
+            });
+
+            return;
+        }
+
         OpenSerialPortText = "正在打开串口";
-        
+
+        var port = new System.IO.Ports.SerialPort
+        {
+            PortName = serialPort.Name,
+            BaudRate = _baudRateId,
+            StopBits = _stopBitId,
+            DataBits = _dataBitId
+        };
+
+        port.Open();
+
         await Task.Delay(1000);
         
         OpenSerialPortText = "关闭串口";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Factory.StartNew(async () =>
+        {
+            if(disposable==false)
+            {
+                await LoadSerialPortAsync();
+                await Task.Delay(5000);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+    }
+
+    private async Task LoadSerialPortAsync()
+    {
+        string[] ports = System.IO.Ports.SerialPort.GetPortNames();
+
+        _serialPortDtos.Clear();
+
+        // 输出所有串口名称
+        foreach (string port in ports)
+        {
+            _serialPortDtos.Add(new SerialPortDto(port));
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        disposable = true;
+        await Task.CompletedTask;
     }
 }

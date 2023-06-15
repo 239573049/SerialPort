@@ -1,6 +1,19 @@
-﻿<MTextarea Label="One row"
-           AutoGrow
-           Outlined
-           Rows="1"
-           RowHeight="15">
+﻿<MTextarea Outlined
+            Rows="3"
+           NoResize
+            Style="max-height:100px;margin:5px;"
+            RowHeight="35">
+     <AppendOuterContent>
+         <MButton Text Style="margin:5px;" >发送</MButton>
+         <MButton Text Style="margin:5px;" Color="red">清空发送</MButton>
+    </AppendOuterContent>
 </MTextarea>
+
+
+<style>
+    .m-input__append-outer {
+        margin: 0px !important;
+        display: inline-flex !important;
+        flex-direction: column;
+    }
+</style>

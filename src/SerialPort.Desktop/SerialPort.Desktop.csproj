@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="Masa.Blazor" Version="1.0.0-rc.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="7.0.86" />
+        <PackageReference Include="System.IO.Ports" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -18,5 +19,4 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
     </ItemGroup>
-
 </Project>
