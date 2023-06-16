@@ -108,7 +108,8 @@ public partial class Home : IAsyncDisposable
         {
             await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
             {
-                Title = "请先选择串口"
+                Title = "请先选择串口",
+                Type = AlertTypes.Error
             });
 
             return;
@@ -120,20 +121,30 @@ public partial class Home : IAsyncDisposable
             OpenSerialPortText = "打开串口";
             return;
         }
-
-        serialPort = new System.IO.Ports.SerialPort
+        try
         {
-            PortName = port.Name,
-            BaudRate = _baudRateId,
-            StopBits = _stopBitId,
-            DataBits = _dataBitId
-        };
+            serialPort = new System.IO.Ports.SerialPort
+            {
+                PortName = port.Name,
+                BaudRate = _baudRateId,
+                StopBits = _stopBitId,
+                DataBits = _dataBitId
+            };
 
-        serialPort.Open();
+            serialPort.Open();
 
-        serialPort.DataReceived += SerialPort_DataReceived;
+            serialPort.DataReceived += SerialPort_DataReceived;
 
-        OpenSerialPortText = "关闭串口";
+            OpenSerialPortText = "关闭串口";
+        }
+        catch (UnauthorizedAccessException)
+        {
+            await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
+            {
+                Title = "打开串口失败",
+                Type = AlertTypes.Error
+            });
+        }
     }
 
     private async void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -154,8 +165,9 @@ public partial class Home : IAsyncDisposable
         {
             if (disposable == false)
             {
+                // 定时循环监听新串口
                 await LoadSerialPortAsync();
-                await Task.Delay(5000);
+                await Task.Delay(10000);
                 await InvokeAsync(StateHasChanged);
             }
         });
@@ -178,6 +190,7 @@ public partial class Home : IAsyncDisposable
         {
             _serialPortDtos.Add(new SerialPortDto(port));
         }
+        await Task.CompletedTask;
     }
 
     private async Task OnSendMessage(string message)
