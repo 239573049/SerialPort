@@ -64,7 +64,7 @@
         </MTabs>
         <MTabsItems @bind-Value="_tab">
             <MTabItem Value="1">
-                <SendMessage />
+                <SendMessage SendDisabled="@(serialPort==null||serialPort.IsOpen==false)" />
             </MTabItem>
             <MTabItem Value="2">
                 <MCard Flat>
@@ -74,7 +74,7 @@
         </MTabsItems>
     </div>
 </div>
-<MFooter>
+<MFooter App>
     <MButton Icon Small><MIcon>mdi-cog-outline</MIcon></MButton>
     <span style="color:red;margin-left:8px;">open666.cn</span>
 </MFooter>

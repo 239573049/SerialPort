@@ -1,3 +1,5 @@
+using Application = System.Windows.Forms.Application;
+
 namespace SerialPort.Desktop;
 
 internal static class Program

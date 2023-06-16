@@ -56,7 +56,7 @@ public partial class Home : IAsyncDisposable
 
     private int _baudRateId = 9600;
     
-    private StopBits _stopBitId = StopBits.None;
+    private StopBits _stopBitId = StopBits.One;
     
     private int _dataBitId = 8;
     
@@ -66,7 +66,7 @@ public partial class Home : IAsyncDisposable
 
     private bool disposable;
 
-    private SerialPort 
+    private System.IO.Ports.SerialPort serialPort;
 
     private string OpenSerialPortText = "打开串口";
     private async Task<object> InitEditor()
@@ -85,9 +85,9 @@ public partial class Home : IAsyncDisposable
 
     private async Task OpenSerialPort()
     {
-        var serialPort = _serialPortDtos.First(x => x.Id == _serialPortId);
+        var port = _serialPortDtos.First(x => x.Id == _serialPortId);
 
-        if (serialPort == null)
+        if (port == null)
         {
             await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
             {
@@ -97,20 +97,23 @@ public partial class Home : IAsyncDisposable
             return;
         }
 
-        OpenSerialPortText = "正在打开串口";
-
-        var port = new System.IO.Ports.SerialPort
+        if (serialPort?.IsOpen == true)
         {
-            PortName = serialPort.Name,
+            serialPort.Close();
+            OpenSerialPortText = "打开串口";
+            return;
+        }
+
+        serialPort = new System.IO.Ports.SerialPort
+        {
+            PortName = port.Name,
             BaudRate = _baudRateId,
             StopBits = _stopBitId,
             DataBits = _dataBitId
         };
 
-        port.Open();
+        serialPort.Open();
 
-        await Task.Delay(1000);
-        
         OpenSerialPortText = "关闭串口";
     }
 
