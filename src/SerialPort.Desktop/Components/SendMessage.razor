@@ -1,10 +1,11 @@
 ﻿<MTextarea Outlined
-            Rows="3"
+           Rows="3"
+           @bind-Value="value"
            NoResize
-            Style="max-height:100px;margin:5px;"
-            RowHeight="35">
+           Style="max-height:100px;margin:5px;"
+           RowHeight="35">
      <AppendOuterContent>
-         <MButton Text Style="margin:5px;" Disabled="SendDisabled">发送</MButton>
+         <MButton Text Style="margin:5px;" Disabled="SendDisabled" OnClick="Send">发送</MButton>
          <MButton Text Style="margin:5px;" Color="red">清空发送</MButton>
     </AppendOuterContent>
 </MTextarea>

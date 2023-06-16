@@ -1,6 +1,7 @@
 using BlazorComponent;
 using SerialPort.Desktop.Modules;
 using System.IO.Ports;
+using System.Text;
 
 namespace SerialPort.Desktop.Pages;
 
@@ -55,11 +56,11 @@ public partial class Home : IAsyncDisposable
     private Guid _serialPortId;
 
     private int _baudRateId = 9600;
-    
+
     private StopBits _stopBitId = StopBits.One;
-    
+
     private int _dataBitId = 8;
-    
+
     private CheckBitType _checkBitId = CheckBitType.None;
 
     private StringNumber _tab;
@@ -68,12 +69,28 @@ public partial class Home : IAsyncDisposable
 
     private System.IO.Ports.SerialPort serialPort;
 
+    private string _debugMessage = string.Empty;
+
+    /// <summary>
+    /// 串口标签
+    /// </summary>
     private string OpenSerialPortText = "打开串口";
+
+    /// <summary>
+    /// 发送间隔（ms）
+    /// </summary>
+    private int _sendInterval = 1000;
+
+    /// <summary>
+    /// 是否定时发送
+    /// </summary>
+    private bool _sendTime = false;
+
     private async Task<object> InitEditor()
     {
         object options = new
         {
-            language = "csharp",
+            language = "serial",
             theme = "vs-dark",
             automaticLayout = true,
         };
@@ -114,14 +131,28 @@ public partial class Home : IAsyncDisposable
 
         serialPort.Open();
 
+        serialPort.DataReceived += SerialPort_DataReceived;
+
         OpenSerialPortText = "关闭串口";
+    }
+
+    private async void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+    {
+        var buffer = new byte[serialPort.ReadBufferSize];
+        serialPort.Read(buffer, 0, buffer.Length);
+
+        var message = Encoding.UTF8.GetString(buffer);
+
+        _debugMessage += $"{DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+
+        await InvokeAsync(StateHasChanged);
     }
 
     protected override async Task OnInitializedAsync()
     {
         await Task.Factory.StartNew(async () =>
         {
-            if(disposable==false)
+            if (disposable == false)
             {
                 await LoadSerialPortAsync();
                 await Task.Delay(5000);
@@ -130,6 +161,10 @@ public partial class Home : IAsyncDisposable
         });
     }
 
+    /// <summary>
+    /// 定时加载串口
+    /// </summary>
+    /// <returns></returns>
     private async Task LoadSerialPortAsync()
     {
         string[] ports = System.IO.Ports.SerialPort.GetPortNames();
@@ -137,9 +172,38 @@ public partial class Home : IAsyncDisposable
         _serialPortDtos.Clear();
 
         // 输出所有串口名称
-        foreach (string port in ports)
+        foreach (var port in ports)
         {
             _serialPortDtos.Add(new SerialPortDto(port));
+        }
+    }
+
+    private async Task OnSendMessage(string message)
+    {
+        if (serialPort == null || serialPort?.IsOpen == false)
+        {
+            await PopupService.EnqueueSnackbarAsync("串口未打开", AlertTypes.Error);
+            return;
+        }
+
+        if (_sendTime)
+        {
+            try
+            {
+
+                while (_sendTime && serialPort!.IsOpen)
+                {
+                    serialPort!.WriteLine(message);
+                    await Task.Delay(_sendInterval);
+                }
+            }
+            catch (Exception e)
+            {
+            }
+        }
+        else
+        {
+            serialPort!.WriteLine(message);
         }
     }
 

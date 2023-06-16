@@ -10,7 +10,8 @@ public partial class MainFrom : Form
     {
         InitializeComponent();
 
-        MinimumSize = new Size(850, 700);
+        // 默认最小窗体大小
+        MinimumSize = new Size(850, 750);
 
         var services = new ServiceCollection();
         services.AddWindowsFormsBlazorWebView();
