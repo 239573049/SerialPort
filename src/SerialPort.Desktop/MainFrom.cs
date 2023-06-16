@@ -1,6 +1,7 @@
 using Masa.Blazor;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
+using SerialPort.Desktop.JSInterp;
 
 namespace SerialPort.Desktop;
 
@@ -22,6 +23,7 @@ public partial class MainFrom : Form
                 theme.Dark = false;
             });
         });
+        services.AddScoped<SerialJSInterp>();
         services.AddBlazorWebViewDeveloperTools();
         blazorWebView1.HostPage = "wwwroot/index.html";
         blazorWebView1.Services = services.BuildServiceProvider();

@@ -91,7 +91,7 @@ public partial class Home : IAsyncDisposable
         object options = new
         {
             language = "serial",
-            theme = "vs-dark",
+            theme = "serialTheme",
             automaticLayout = true,
         };
 
@@ -143,7 +143,7 @@ public partial class Home : IAsyncDisposable
 
         var message = Encoding.UTF8.GetString(buffer);
 
-        _debugMessage += $"{DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+        _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
 
         await InvokeAsync(StateHasChanged);
     }
@@ -159,6 +159,8 @@ public partial class Home : IAsyncDisposable
                 await InvokeAsync(StateHasChanged);
             }
         });
+
+        await SerialJSInterp.Init();
     }
 
     /// <summary>
