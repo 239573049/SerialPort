@@ -154,7 +154,7 @@ public partial class Home : IAsyncDisposable
 
         var message = Encoding.UTF8.GetString(buffer);
 
-        _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+        _debugMessage += $"[接收] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
 
         await InvokeAsync(StateHasChanged);
     }
@@ -167,8 +167,8 @@ public partial class Home : IAsyncDisposable
             {
                 // 定时循环监听新串口
                 await LoadSerialPortAsync();
-                await Task.Delay(10000);
                 await InvokeAsync(StateHasChanged);
+                await Task.Delay(10000);
             }
         });
 
@@ -195,6 +195,11 @@ public partial class Home : IAsyncDisposable
 
     private async Task OnSendMessage(string message)
     {
+        if (string.IsNullOrEmpty(message))
+        {
+            return;
+        }
+
         if (serialPort == null || serialPort?.IsOpen == false)
         {
             await PopupService.EnqueueSnackbarAsync("串口未打开", AlertTypes.Error);
@@ -209,15 +214,19 @@ public partial class Home : IAsyncDisposable
                 while (_sendTime && serialPort!.IsOpen)
                 {
                     serialPort!.WriteLine(message);
+                    _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+                    await InvokeAsync(StateHasChanged);
                     await Task.Delay(_sendInterval);
                 }
             }
             catch (Exception e)
             {
+                _debugMessage += $"[error] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
             }
         }
         else
         {
+            _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
             serialPort!.WriteLine(message);
         }
     }

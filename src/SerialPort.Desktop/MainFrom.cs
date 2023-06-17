@@ -34,31 +34,6 @@ public partial class MainFrom : Form
         blazorWebView1.Services = services.BuildServiceProvider();
         blazorWebView1.RootComponents.Add<App>("#app");
 
-
     }
 
-    private string GetMimeType(string fileName)
-    {
-        var extension = Path.GetExtension(fileName).ToLowerInvariant();
-        switch (extension)
-        {
-            case ".html":
-                return "text/html";
-            case ".css":
-                return "text/css";
-            case ".js":
-                return "text/javascript";
-            case ".png":
-                return "image/png";
-            case ".jpg":
-            case ".jpeg":
-                return "image/jpeg";
-            case ".gif":
-                return "image/gif";
-            case ".ico":
-                return "image/x-icon";
-            default:
-                return "application/octet-stream";
-        }
-    }
 }
