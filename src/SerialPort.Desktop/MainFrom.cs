@@ -1,11 +1,6 @@
-using Masa.Blazor;
 using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Web.WebView2.Core;
 using SerialPort.Desktop.JSInterp;
-using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 
 namespace SerialPort.Desktop;
 
@@ -16,7 +11,7 @@ public partial class MainFrom : Form
         InitializeComponent();
 
         // 默认最小窗体大小
-        MinimumSize = new Size(850, 750);
+        MinimumSize = new Size(850, 800);
 
         var services = new ServiceCollection();
         services.AddWindowsFormsBlazorWebView();

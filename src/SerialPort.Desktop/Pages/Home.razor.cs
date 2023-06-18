@@ -1,12 +1,19 @@
 using BlazorComponent;
 using SerialPort.Desktop.Modules;
 using System.IO.Ports;
+using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Components;
+using SerialPort.Desktop.Components;
 
 namespace SerialPort.Desktop.Pages;
 
 public partial class Home : IAsyncDisposable
 {
+    
+    [CascadingParameter(Name = nameof(SettingOptions))]
+    public SettingOptions _settingOptions { get; set; }
+    
     private List<SerialPortDto> _serialPortDtos = new();
 
     private List<BaudRateDto> _baudRateDtos = new()
@@ -32,25 +39,25 @@ public partial class Home : IAsyncDisposable
 
     private List<StopBitDto> _stopBitDtos = new()
     {
-        new (StopBits.None),
-        new (StopBits.One),
-        new (StopBits.Two),
-        new (StopBits.OnePointFive),
+        new(StopBits.None),
+        new(StopBits.One),
+        new(StopBits.Two),
+        new(StopBits.OnePointFive),
     };
 
-    private List<DataBitDto> _dataBitDtos = new List<DataBitDto>()
+    private List<DataBitDto> _dataBitDtos = new()
     {
-        new (8),
-        new (7),
-        new (6),
-        new (5),
+        new(8),
+        new(7),
+        new(6),
+        new(5),
     };
 
     private List<CheckBitDto> _checkBitDtos = new()
     {
-        new (CheckBitType.None),
-        new (CheckBitType.Odd),
-        new (CheckBitType.Even),
+        new(CheckBitType.None),
+        new(CheckBitType.Odd),
+        new(CheckBitType.Even),
     };
 
     private Guid _serialPortId;
@@ -85,6 +92,16 @@ public partial class Home : IAsyncDisposable
     /// 是否定时发送
     /// </summary>
     private bool _sendTime = false;
+
+    /// <summary>
+    /// 是否十六进制发送
+    /// </summary>
+    private bool HexSend = false;
+
+    /// <summary>
+    /// 是否十六进制显示
+    /// </summary>
+    private bool HexShow = false;
 
     private async Task<object> InitEditor()
     {
@@ -121,6 +138,7 @@ public partial class Home : IAsyncDisposable
             OpenSerialPortText = "打开串口";
             return;
         }
+
         try
         {
             serialPort = new System.IO.Ports.SerialPort
@@ -150,11 +168,15 @@ public partial class Home : IAsyncDisposable
     private async void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         var buffer = new byte[serialPort.ReadBufferSize];
-        serialPort.Read(buffer, 0, buffer.Length);
+        var count = serialPort.Read(buffer, 0, buffer.Length);
+        var message = string.Empty;
 
-        var message = Encoding.UTF8.GetString(buffer);
+        buffer = buffer.Take(count).ToArray();
 
-        _debugMessage += $"[接收] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+        // 转换hex
+        message = HexShow ? string.Join(" ", buffer.Select(x => x.ToString("X2"))) : Encoding.UTF8.GetString(buffer);
+
+        _debugMessage += $"[accept] {DateTime.Now:HH:mm:ss}：{message}{Environment.NewLine}";
 
         await InvokeAsync(StateHasChanged);
     }
@@ -165,10 +187,16 @@ public partial class Home : IAsyncDisposable
         {
             if (disposable == false)
             {
-                // 定时循环监听新串口
-                await LoadSerialPortAsync();
-                await InvokeAsync(StateHasChanged);
-                await Task.Delay(10000);
+                try
+                {
+                    // 定时循环监听新串口
+                    await LoadSerialPortAsync();
+                    await InvokeAsync(StateHasChanged);
+                    await Task.Delay(10000);
+                }
+                catch (Exception)
+                {
+                }
             }
         });
 
@@ -190,6 +218,7 @@ public partial class Home : IAsyncDisposable
         {
             _serialPortDtos.Add(new SerialPortDto(port));
         }
+
         await Task.CompletedTask;
     }
 
@@ -210,11 +239,39 @@ public partial class Home : IAsyncDisposable
         {
             try
             {
-
                 while (_sendTime && serialPort!.IsOpen)
                 {
-                    serialPort!.WriteLine(message);
-                    _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+                    if (HexSend)
+                    {
+                        try
+                        {
+                            message = message.Replace(" ", "");
+                            byte[] hexArray = new byte[message.Length / 2];
+                            for (int i = 0; i < message.Length; i += 2)
+                            {
+                                hexArray[i / 2] = Convert.ToByte(message.Substring(i, 2), 16);
+                            }
+
+                            serialPort.Write(hexArray, 0, hexArray.Length);
+                            _debugMessage +=
+                                $"[send] {DateTime.Now:HH:mm:ss}：{BitConverter.ToString(hexArray).Replace("-", "")}{Environment.NewLine}";
+                        }
+                        catch (Exception e)
+                        {
+                            await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
+                            {
+                                Content = e.Message,
+                                Type = AlertTypes.Error
+                            });
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        serialPort!.WriteLine(message);
+                        _debugMessage += $"[send] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
+                    }
+
                     await InvokeAsync(StateHasChanged);
                     await Task.Delay(_sendInterval);
                 }
@@ -226,13 +283,51 @@ public partial class Home : IAsyncDisposable
         }
         else
         {
+            if (HexSend)
+            {
+                try
+                {
+                    message = message.Replace(" ", "");
+                    byte[] hexArray = new byte[message.Length / 2];
+                    for (int i = 0; i < message.Length; i += 2)
+                    {
+                        hexArray[i / 2] = Convert.ToByte(message.Substring(i, 2), 16);
+                    }
+
+                    serialPort.Write(hexArray, 0, hexArray.Length);
+                    _debugMessage +=
+                        $"[send] {DateTime.Now:HH:mm:ss}：{BitConverter.ToString(hexArray).Replace("-", "")}{Environment.NewLine}";
+                }
+                catch (Exception e)
+                {
+                    await PopupService.EnqueueSnackbarAsync(new SnackbarOptions()
+                    {
+                        Content = e.Message,
+                        Type = AlertTypes.Error
+                    });
+                    return;
+                }
+            }
+            else
+            {
+                serialPort!.WriteLine(message);
+            }
+
             _debugMessage += $"[info] {DateTime.Now:HH:mm:ss}：{message.TrimEnd('\0')}{Environment.NewLine}";
-            serialPort!.WriteLine(message);
         }
+    }
+
+    private void GoSetting()
+    {
+        NavigationManager.NavigateTo("/setting");
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (serialPort != null && serialPort.IsOpen)
+        {
+            serialPort.Close();
+        }
         disposable = true;
         await Task.CompletedTask;
     }

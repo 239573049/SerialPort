@@ -1,5 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using SerialPort.Desktop.Modules
+@inherits LayoutComponentBase
 
-<MApp>
-    @Body
-</MApp>
+<CascadingValue Name="@nameof(SettingOptions)" Value="_settingOptions">
+    <MApp>
+        @Body
+    </MApp>
+</CascadingValue>

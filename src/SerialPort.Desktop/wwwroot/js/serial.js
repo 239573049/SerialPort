@@ -6,8 +6,8 @@ function init() {
         tokenizer: {
             root: [
                 [/\[error.*/, "custom-error"],
-                [/\[notice.*/, "custom-notice"],
-                [/\[info.*/, "custom-info"],
+                [/\[accept.*/, "custom-notice"],
+                [/\[send.*/, "custom-info"],
                 [/\[[a-zA-Z 0-9:]+\]/, "custom-date"],
             ],
         },
@@ -62,7 +62,7 @@ function init() {
         base: "vs",
         inherit: false,
         rules: [
-            { token: "custom-info", foreground: "808080" },
+            { token: "custom-info", foreground: "0292fb" },
             { token: "custom-error", foreground: "ff0000", fontStyle: "bold" },
             { token: "custom-notice", foreground: "FFA500" },
             { token: "custom-date", foreground: "008800" },

@@ -1,0 +1,34 @@
+﻿@page "/setting"
+@using SerialPort.Desktop.Helper
+
+@inject NavigationManager NavigationManager
+@inject IPopupService _PopupService
+
+<MAppBar
+    App
+    Color="deep-purple"
+    Height="50"
+    Dark>
+    <MButton
+        OnClick="GoHome"
+        Icon>
+        <MIcon>
+            mdi-arrow-left
+        </MIcon>
+    </MButton>
+    <MToolbarTitle>系统设置</MToolbarTitle>
+    <MSpacer></MSpacer>
+    <MButton Text OnClick="OnSave">保存</MButton>
+</MAppBar>
+<MMain>
+    <MContainer  Fluid>
+        <MSelect Items="DebugFormLocations"
+                 @bind-Value="_settingOptions.DebugFormLocationType"
+                 ItemText="u => EnumHelper.GetEnumDescription(u)"
+                 ItemValue="u => u"
+                 Label="调试窗口位置"
+                 Dense
+                 Outlined>
+        </MSelect>
+    </MContainer>
+</MMain>
